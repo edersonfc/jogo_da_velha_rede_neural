@@ -1,6 +1,6 @@
 
 const RedeNeural = require('./rede_neural/RedeNeural.js');
-const { salvarModelo, carregarModelo } = require('./rede_neural/modeloUtils.js');
+const { salvarModelo } = require('./rede_neural/modeloUtils.js');
 
 // Função para gerar movimentos e treinar a rede neural
 function gerarMovimentos() {
@@ -44,7 +44,6 @@ function verificarVencedor(tabuleiro) {
 }
 
 //________________//CONFIGURAÇÃO REDE NEURAL//___________________//
-
 // Instânciando e Configurando a Rede Neural
 let neuroniosCamadaEntrada = 9;
 let neuroniosCamadaEscondida = [100,100,100];

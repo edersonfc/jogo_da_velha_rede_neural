@@ -27,24 +27,31 @@ async function perguntarSeJogarNovamente() {
 
 //________________//CONFIGURAÇÃO REDE NEURAL//___________________//
 let neuroniosCamadaEntrada = 9;
-let neuroniosCamadaEscondida = [100, 100, 100];
+// let neuroniosCamadaEscondida = [100, 100, 100];
+let neuroniosCamadaEscondida = [100, 10, 100];
 let neuroniosCamadaSaida = 1;
 let estrutura = [neuroniosCamadaEntrada, ...neuroniosCamadaEscondida, neuroniosCamadaSaida];
 let redeNeural = new RedeNeural(estrutura);
 
+
+/* ISSO QUE ESTÁ DESATIVADO ESTÁ FUNCIONANDO SEM ELE E NÃO PODERIA */
 try {
   const modeloCarregado = carregarModelo(redeNeural, 'modelo_treinado_jogo_da_velha');
-  const modeloFormatado = modeloCarregado.map(camada => {
-    return {
-      pesos: camada.pesos.map(peso => JSON.parse(JSON.stringify(peso))),
-      biases: camada.biases
-    };
-  });
+
   console.log('Modelo carregado com sucesso!');
+
+  // Atribuir os pesos e vieses (bias) carregados à rede neural
+  redeNeural.camadas.forEach((camada, index) => {
+    camada.pesos = modeloCarregado[index].pesos;
+    camada.biases = modeloCarregado[index].biases;
+  });
+
 } catch (error) {
   console.error(`Erro ao carregar o modelo: ${error.message}`);
   process.exit(1);
 }
+/* */
+
 
 // Função para exibir o tabuleiro
 function exibirTabuleiro(tabuleiro) {
@@ -89,7 +96,6 @@ function verificarVencedor(tabuleiro) {
       return tabuleiro[a] === 1 ? 15 : 10; // 15 para IA, 10 para humano
     }
   }
-
   return tabuleiro.includes(0) ? null : 0; // Retorna 0 para empate, null para continuar o jogo
 }
 
@@ -114,7 +120,6 @@ function obterJogadaIA(tabuleiro) {
       melhorJogada = jogada;
     }
   }
-
   return melhorJogada;
 }
 
@@ -136,10 +141,9 @@ async function jogarContraIA() {
     console.clear();
     exibirTabuleiro(tabuleiro);
     let posicaoHumano = await perguntarPosicao();
-    console.log(`Você escolheu a posição: ${posicaoHumano}`);
+    // console.log(`Você escolheu a posição: ${posicaoHumano}`);
     // Auditoria
     // console.log(tabuleiro)
-
     if (tabuleiro[posicaoHumano] === 0) {
       // Auditoria, Jogada Humana Posição no Tabuleiro
       tabuleiro[posicaoHumano] = jogadorHumano;
@@ -150,14 +154,12 @@ async function jogarContraIA() {
 
     vencedor = verificarVencedor(tabuleiro);
     if (vencedor !== null) break;
-
     // Adicionando um delay de 1 segundo antes da IA marcar a jogada
-    await delay(2000);
-
+    await delay(500);
     const posicaoIA = obterJogadaIA(tabuleiro);
     // Auditoria, Jogada da IA escolhendo uma posição pra marcar no tabuleiro
     console.log("Jogada IA => " + posicaoIA)
-    await delay(2000);
+    await delay(500);
     tabuleiro[posicaoIA] = 1;
     vencedor = verificarVencedor(tabuleiro);
   }

@@ -24,16 +24,6 @@ class Camada {
     }));
   }
 
-  
-  // Importa pesos e biases para os neurônios da camada
-  // importarPesosBiases(dados) {
-  //   this.neuronios.forEach((neuronio, index) => {
-  //     neuronio.pesos = dados[index].pesos;
-  //     neuronio.bias = dados[index].bias;
-  //   });
-  // }
-
-
   importarPesosBiases(dadosCamada) {
     if (dadosCamada.pesos.length !== this.neuronios.length || dadosCamada.biases.length !== this.neuronios.length) {
       throw new Error("O modelo importado não corresponde à estrutura da camada");
@@ -45,7 +35,6 @@ class Camada {
       this.neuronios[i].bias = biases[i];
     }
   }
-
 
 
 }

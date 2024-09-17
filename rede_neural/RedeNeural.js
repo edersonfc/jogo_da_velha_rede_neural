@@ -54,13 +54,6 @@ class RedeNeural {
   }
 
 
-  // importarModelo(dadosModelo) {
-  //   this.camadas.forEach((camada, index) => {
-  //     camada.importarPesosBiases(dadosModelo[index]);
-  //   });
-  // }
-
-  ////##############################
   importarModelo(dadosModelo) {
     if (dadosModelo.length !== this.camadas.length) {
       throw new Error("O modelo importado não corresponde à estrutura da rede neural");
