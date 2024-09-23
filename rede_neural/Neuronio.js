@@ -1,35 +1,52 @@
+
+
 class Neuronio {
   constructor(numEntradas) {
-    // Inicializa os pesos com valores aleatórios entre -1 e 1
     this.pesos = Array.from({ length: numEntradas }, () => Math.random() * 2 - 1);
-    // Inicializa o bias com um valor aleatório entre -1 e 1
     this.bias = Math.random() * 2 - 1;
     this.saida = 0;
-    this.erro = 0;
+    this.gradiente = 0;
+    this.deltaPesosAnterior = new Array(numEntradas).fill(0);
+    this.deltaBiasAnterior = 0;
   }
 
-  // Função de ativação (sigmoid)
   ativacao(valor) {
     return 1 / (1 + Math.exp(-valor));
   }
 
-  // Propaga as entradas através do neurônio
+  derivadaAtivacao(valor) {
+    return valor * (1 - valor);
+  }
+
   propagar(entradas) {
-    // Calcula a soma ponderada das entradas mais o bias
-    const soma = entradas.reduce((acc, entrada, index) => acc + entrada * this.pesos[index], 0);
-    // Calcula a saída do neurônio aplicando a função de ativação
-    this.saida = this.ativacao(soma + this.bias);
+    const soma = entradas.reduce((acc, entrada, index) => acc + entrada * this.pesos[index], 0) + this.bias;
+    this.saida = this.ativacao(soma);
     return this.saida;
   }
 
-  // Ajusta os pesos e o bias do neurônio com base no erro e na taxa de aprendizagem
-  ajustarPesos(entradas, taxaAprendizagem) {
-    for (let i = 0; i < this.pesos.length; i++) {
-      // Ajusta cada peso
-      this.pesos[i] += taxaAprendizagem * this.erro * entradas[i];
+  calcularGradienteSaida(saidaEsperada) {
+    this.gradiente = (saidaEsperada - this.saida) * this.derivadaAtivacao(this.saida);
+  }
+
+  calcularGradienteOculto(camadaSeguinte, indice) {
+    let soma = 0;
+    for (let i = 0; i < camadaSeguinte.neuronios.length; i++) {
+      soma += camadaSeguinte.neuronios[i].gradiente * camadaSeguinte.neuronios[i].pesos[indice];
     }
-    // Ajusta o bias
-    this.bias += taxaAprendizagem * this.erro;
+    this.gradiente = soma * this.derivadaAtivacao(this.saida);
+  }
+
+  atualizarPesos(entradas, taxaAprendizagem, momentum, regularizacao) {
+    for (let i = 0; i < this.pesos.length; i++) {
+      const deltaPeso = taxaAprendizagem * this.gradiente * entradas[i] + 
+                        momentum * this.deltaPesosAnterior[i] - 
+                        regularizacao * this.pesos[i];
+      this.pesos[i] += deltaPeso;
+      this.deltaPesosAnterior[i] = deltaPeso;
+    }
+    const deltaBias = taxaAprendizagem * this.gradiente + momentum * this.deltaBiasAnterior;
+    this.bias += deltaBias;
+    this.deltaBiasAnterior = deltaBias;
   }
 }
 

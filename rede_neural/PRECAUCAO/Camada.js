@@ -2,28 +2,20 @@ const Neuronio = require('./Neuronio.js');
 
 class Camada {
   constructor(numNeuronios, numEntradas) {
+    // Inicializa a camada com um array de neurônios
     this.neuronios = Array.from({ length: numNeuronios }, () => new Neuronio(numEntradas));
-    this.entradas = [];
   }
+
+  // Propaga as entradas através da camada
   propagar(entradas) {
-    this.entradas = entradas;
     return this.neuronios.map(neuronio => neuronio.propagar(entradas));
   }
-  calcularGradientesSaida(saidasEsperadas) {
-    this.neuronios.forEach((neuronio, i) => {
-      neuronio.calcularGradienteSaida(saidasEsperadas[i]);
-    });
+
+  // Ajusta os pesos dos neurônios da camada
+  ajustarPesos(entradas, taxaAprendizagem) {
+    this.neuronios.forEach(neuronio => neuronio.ajustarPesos(entradas, taxaAprendizagem));
   }
-  calcularGradientesOcultos(camadaSeguinte) {
-    this.neuronios.forEach((neuronio, i) => {
-      neuronio.calcularGradienteOculto(camadaSeguinte, i);
-    });
-  }
-  atualizarPesos(taxaAprendizagem, momentum, regularizacao) {
-    this.neuronios.forEach(neuronio => {
-      neuronio.atualizarPesos(this.entradas, taxaAprendizagem, momentum, regularizacao);
-    });
-  }
+
   // Exporta pesos e biases dos neurônios da camada
   exportarPesosBiases() {
     return this.neuronios.map(neuronio => ({
@@ -31,6 +23,7 @@ class Camada {
       bias: neuronio.bias
     }));
   }
+
   importarPesosBiases(dadosCamada) {
     if (dadosCamada.pesos.length !== this.neuronios.length || dadosCamada.biases.length !== this.neuronios.length) {
       throw new Error("O modelo importado não corresponde à estrutura da camada");
@@ -42,5 +35,8 @@ class Camada {
       this.neuronios[i].bias = biases[i];
     }
   }
+
+
 }
+
 module.exports = Camada;
