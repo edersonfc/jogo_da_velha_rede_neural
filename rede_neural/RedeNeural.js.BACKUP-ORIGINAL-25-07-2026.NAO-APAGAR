@@ -118,36 +118,9 @@ module.exports = RedeNeural;
 
 
 // Path: rede_neural/RedeNeural.js
-//
-// MUDANCAS DE 25-07-2026 (o original esta em RedeNeural.js.BACKUP-ORIGINAL-...):
-//
-// 1. `tipoSaida`. A ultima camada agora pode ser 'softmax' (como era, e segue
-//    sendo o padrao) ou 'linear'.
-//
-//    POR QUE ISSO ERA O BUG MAIS GRAVE DO TREINO: em Q-learning a saida da rede
-//    e o VALOR de cada jogada, e valor pode ser NEGATIVO (-1 = essa jogada me
-//    faz perder). O softmax devolve so numeros positivos que somam 1 -- ou seja,
-//    era MATEMATICAMENTE IMPOSSIVEL a rede antiga dizer "essa jogada e ruim".
-//    Ela so conseguia dizer "essa e menos provavel que aquela". E o alvo que o
-//    treino mandava (recompensa + gama x max) valia ate 1,9, um numero que o
-//    softmax nunca alcanca: a rede era empurrada para um lugar onde nao podia
-//    chegar, os pesos cresciam sem parar, e foi assim que o modelo salvo veio a
-//    ter pesos ASTRONOMICOS. Medido no arquivo que estava salvo: menor peso
-//    -2,0 x 10^86, e 779 dos 5.248 pesos (14,8% da rede) acima de 100 em valor
-//    absoluto -- quando a inicializacao Xavier nasce entre -0,8 e +0,8. Nao era
-//    uma rede mal treinada: era uma rede DIVERGIDA.
-//
-// 2. `mascara` no backward: permite treinar so as saidas que fazem sentido
-//    (as casas livres do tabuleiro), sem gradiente nas casas ja ocupadas.
-//
-// 3. Corte de gradiente (`limiteGradiente`): rede de seguranca contra explosao.
-//
-// 4. `clonar()`: usado pela "rede alvo" do DQN (target network).
 class RedeNeural {
-  constructor(estrutura, opcoes = {}) {
+  constructor(estrutura) {
       this.estrutura = estrutura;
-      this.tipoSaida = opcoes.tipoSaida || 'softmax';   // 'softmax' | 'linear'
-      this.limiteGradiente = opcoes.limiteGradiente || 5;
       this.pesos = [];
       this.biases = [];
       this.inicializarRede();
@@ -210,10 +183,9 @@ class RedeNeural {
           }
 
           zs.push(z);
-          if (i === this.pesos.length - 1 && this.tipoSaida === 'softmax') {
+          if (i === this.pesos.length - 1) {
               ativacoes.push(this.softmax(camadaAtual));
           } else {
-              // tipoSaida 'linear': a saida E a soma crua (pode ser negativa).
               ativacoes.push(camadaAtual);
           }
       }
@@ -221,25 +193,12 @@ class RedeNeural {
       return { ativacoes, zs };
   }
 
-  /**
-   * `mascara` (opcional): array de 9 valores 0/1. Onde vale 0, aquela saida
-   * NAO gera gradiente -- serve para ignorar as casas ja ocupadas do tabuleiro.
-   */
-  backward(entrada, alvo, taxaAprendizado, mascara = null) {
+  backward(entrada, alvo, taxaAprendizado) {
       const { ativacoes, zs } = this.forward(entrada);
       const deltas = [];
-
-      // Erro na camada de saida.
-      //   softmax + cross-entropy  -> derivada = (saida - alvo)
-      //   linear  + erro quadratico-> derivada = (saida - alvo)
-      // A formula e a mesma nos dois casos; o que muda e o SIGNIFICADO da saida.
-      const lim = this.limiteGradiente;
-      let erro = Array.from(ativacoes[ativacoes.length - 1]).map((a, i) => {
-          if (mascara && !mascara[i]) return 0;
-          let d = a - alvo[i];
-          if (d > lim) d = lim; else if (d < -lim) d = -lim;   // corte de gradiente
-          return d;
-      });
+      
+      // Cálculo do erro na camada de saída
+      let erro = Array.from(ativacoes[ativacoes.length - 1]).map((a, i) => a - alvo[i]);
       deltas[this.pesos.length - 1] = erro;
 
       // Backpropagation
@@ -265,21 +224,10 @@ class RedeNeural {
           }
       }
 
-      return this.calcularPerda(ativacoes[ativacoes.length - 1], alvo, mascara);
+      return this.calcularPerda(ativacoes[ativacoes.length - 1], alvo);
   }
 
-  calcularPerda(saida, alvo, mascara = null) {
-      if (this.tipoSaida === 'linear') {
-          // Erro quadratico medio, so nas saidas da mascara.
-          let soma = 0, n = 0;
-          for (let i = 0; i < saida.length; i++) {
-              if (mascara && !mascara[i]) continue;
-              const d = saida[i] - alvo[i];
-              soma += d * d;
-              n++;
-          }
-          return n ? soma / n : 0;
-      }
+  calcularPerda(saida, alvo) {
       // Cross-entropy loss
       return -saida.reduce((acc, val, idx) => acc + alvo[idx] * Math.log(val + 1e-8), 0);
   }
@@ -289,37 +237,17 @@ class RedeNeural {
       return ativacoes[ativacoes.length - 1];
   }
 
-  trainOnBatch(loteEntradas, loteAlvos, taxaAprendizado, loteMascaras = null) {
+  trainOnBatch(loteEntradas, loteAlvos, taxaAprendizado) {
       let perdaTotal = 0;
       for (let i = 0; i < loteEntradas.length; i++) {
-          perdaTotal += this.backward(
-            loteEntradas[i], loteAlvos[i], taxaAprendizado,
-            loteMascaras ? loteMascaras[i] : null
-          );
+          perdaTotal += this.backward(loteEntradas[i], loteAlvos[i], taxaAprendizado);
       }
       return perdaTotal / loteEntradas.length;
-  }
-
-  /** Copia independente da rede -- usada pela "rede alvo" do DQN. */
-  clonar() {
-      const copia = new RedeNeural(this.estrutura.slice(), {
-          tipoSaida: this.tipoSaida,
-          limiteGradiente: this.limiteGradiente
-      });
-      copia.copiarPesosDe(this);
-      return copia;
-  }
-
-  /** Sobrescreve os pesos desta rede com os de outra (sem trocar referencias). */
-  copiarPesosDe(outra) {
-      this.pesos  = outra.pesos.map(camada => camada.map(linha => linha.slice()));
-      this.biases = outra.biases.map(camada => camada.slice());
   }
 
   exportarModelo() {
       return {
           estrutura: this.estrutura,
-          tipoSaida: this.tipoSaida,
           pesos: this.pesos,
           biases: this.biases
       };
@@ -327,8 +255,6 @@ class RedeNeural {
 
   importarModelo(dados) {
       this.estrutura = dados.estrutura;
-      // Modelos antigos nao gravavam `tipoSaida`; nesses casos mantem o atual.
-      if (dados.tipoSaida) this.tipoSaida = dados.tipoSaida;
       this.pesos = dados.pesos;
       this.biases = dados.biases;
   }
