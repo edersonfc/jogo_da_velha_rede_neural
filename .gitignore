@@ -1,0 +1,8 @@
+# A base de conhecimento que a IA forma jogando com VOCE.
+# Nao entra no git de proposito: ela muda a cada partida e e pessoal de cada
+# maquina. Quem clonar o projeto comeca do modelo treinado e forma a sua propria.
+modelo/base_conhecimento.json
+modelo/base_conhecimento.json.tmp
+modelo/base_conhecimento.json.anterior
+
+node_modules/
