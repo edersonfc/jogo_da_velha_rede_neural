@@ -1,0 +1,17 @@
+{
+  "name": "jogo-da-velha-com-rede-neural",
+  "version": "2.0.0",
+  "description": "Jogo da velha com rede neural escrita a mao, sem biblioteca. Treina por imitacao + reforco, e continua aprendendo enquanto voce joga.",
+  "main": "JogarContraIA.js",
+  "scripts": {
+    "jogar": "node JogarContraIA.js",
+    "jogar-do-zero": "node JogarContraIA.js --do-zero",
+    "base": "node JogarContraIA.js --base",
+    "treinar": "node rede_neural/treinarIA.js",
+    "treinar-rapido": "node rede_neural/treinarIA.js --rapido",
+    "treinar-so-reforco": "node rede_neural/treinarIA.js --so-reforco",
+    "avaliar": "node rede_neural/avaliarModelo.js"
+  },
+  "author": "edersonfc7@gmail.com",
+  "license": "ISC"
+}
